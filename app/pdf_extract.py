@@ -24,9 +24,10 @@ import re
 import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, Optional, Protocol
+from typing import Optional, Protocol
 
 import pdfplumber
+
 
 
 # --- result types ---
@@ -131,20 +132,14 @@ def _strip_table_rows_from_text(text: str, table: list[list[Optional[str]]]) -> 
 
 
 def _looks_tabular(text: str) -> bool:
-    """Heuristic: a page with little text and many short lines that
-    line up is likely a borderless table. Used to decide whether to
-    try fallback backends.
-
-    This is intentionally simple. The vision backend doesn't care - it
-    looks at the rendered page directly. The Camelot backend uses its
-    own detection, so this is only a cheap pre-filter.
+    """Cheap pre-filter for borderless tables: a page with many short
+    lines and little paragraph structure is likely tabular.
     """
     if not text:
         return False
     lines = [l for l in text.splitlines() if l.strip()]
     if len(lines) < 4:
         return False
-    # many short lines, no obvious paragraph structure
     short = sum(1 for l in lines if len(l) <= 80)
     return short / len(lines) > 0.7
 
@@ -152,37 +147,31 @@ def _looks_tabular(text: str) -> bool:
 # --- backend registry ---
 
 _BACKENDS: dict[str, TableBackend] = {}
-
-
-def register_backend(backend: TableBackend) -> None:
-    _BACKENDS[backend.name] = backend
+# `_get_backend` lazily imports the optional backends so that
+# `pip install` without the camelot or vision extras doesn't break.
+# A missing optional backend produces a warning and is skipped.
 
 
 def _get_backend(name: str) -> Optional[TableBackend]:
     if name in _BACKENDS:
         return _BACKENDS[name]
-    # Lazy import for optional backends
     if name == "camelot":
         try:
             from .pdf_backends import camelot_backend
-            register_backend(camelot_backend.backend)
-            return _BACKENDS[name]
+            _BACKENDS[name] = camelot_backend.backend
         except Exception as e:
             warnings.warn(f"camelot backend unavailable: {e}")
             return None
-    if name == "vision":
+    elif name == "vision":
         try:
             from .pdf_backends import vision_backend
-            register_backend(vision_backend.backend)
-            return _BACKENDS[name]
+            _BACKENDS[name] = vision_backend.backend
         except Exception as e:
             warnings.warn(f"vision backend unavailable: {e}")
             return None
-    return None
-
-
-def available_backends() -> list[str]:
-    return ["pdfplumber", "camelot", "vision"]
+    else:
+        return None
+    return _BACKENDS.get(name)
 
 
 # --- pdfplumber backend (always available) ---
@@ -204,7 +193,7 @@ class _PdfplumberBackend:
         return results
 
 
-register_backend(_PdfplumberBackend())
+_BACKENDS["pdfplumber"] = _PdfplumberBackend()
 
 
 # --- orchestrator ---
@@ -334,13 +323,3 @@ def extract_pdf(
 
     return chunks
 
-
-def extract_pdfs(
-    paths: Iterable[str | Path],
-    kind: str = "configurator_pdf",
-    debug_dump_dir: Optional[Path] = None,
-) -> list[TextChunk]:
-    out: list[TextChunk] = []
-    for p in paths:
-        out.extend(extract_pdf(p, kind=kind, debug_dump_dir=debug_dump_dir))
-    return out

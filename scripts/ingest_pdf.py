@@ -27,7 +27,6 @@ _BACKEND_ALIASES = {
     "camelot": "camelot",
     "vision": "vision",
     "none": "none",
-    "off": "none",
 }
 
 
@@ -52,8 +51,10 @@ def main() -> int:
         action="append",
         choices=list(_BACKEND_ALIASES),
         help=(
-            "Enable a fallback backend. Pass multiple times for an ordered "
-            "chain. Overrides the PDF_TABLE_BACKENDS env var for this run."
+            "Add a backend to the chain. Pass multiple times for an ordered "
+            "chain (e.g. `--fallback camelot --fallback vision`). The chain "
+            "is appended to whatever PDF_TABLE_BACKENDS is set to (default: "
+            "pdfplumber). Use the env var alone to define the full chain."
         ),
     )
     ap.add_argument(
@@ -65,7 +66,15 @@ def main() -> int:
     args = ap.parse_args()
 
     if args.fallback:
-        os.environ["PDF_TABLE_BACKENDS"] = ",".join(args.fallback)
+        # `--fallback X` *appends* X to the configured chain (additive).
+        # To define the chain from scratch, set PDF_TABLE_BACKENDS and
+        # don't pass --fallback.
+        existing = os.environ.get("PDF_TABLE_BACKENDS", "pdfplumber")
+        chain = [b for b in existing.split(",") if b]
+        for fb in args.fallback:
+            if fb not in chain:
+                chain.append(fb)
+        os.environ["PDF_TABLE_BACKENDS"] = ",".join(chain)
 
     files = _expand_paths(args.paths)
     if not files:
@@ -80,9 +89,13 @@ def main() -> int:
         n = upsert_documents(
             {"id": c.id, "text": c.text, "metadata": c.metadata} for c in chunks
         )
-        # short summary per file
-        backends = sorted({c.metadata.get("table_backends", "") for c in chunks if c.metadata.get("table_backends")})
-        bs = ",".join(b for b in backends if b) or "none"
+        # per-file summary: union of backends actually used
+        used: set[str] = set()
+        for c in chunks:
+            tb = c.metadata.get("table_backends", "")
+            if tb:
+                used.update(tb.split(","))
+        bs = ",".join(sorted(used)) or "none"
         print(f"  {f.name}: {n} chunk(s) [tables via: {bs}]")
         total_chunks += n
 

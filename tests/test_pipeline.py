@@ -70,19 +70,20 @@ SAMPLE_PDF = Path("data/sample_pdfs/rivian-r1t-avery-chen.pdf")
 
 def setup_function(_):
     """Reset both test collections before each test."""
-    for coll in (get_orders_collection(), get_documents_collection()):
-        try:
-            coll.delete(where={"_id": {"$ne": ""}})  # broad match
-        except Exception:
-            # Fallback: try by metadata discriminators
-            try:
-                coll.delete(where={"order_id": {"$ne": ""}})
-            except Exception:
-                pass
-            try:
-                coll.delete(where={"source": {"$ne": ""}})
-            except Exception:
-                pass
+    # Each collection has its own universal discriminator: orders carry
+    # `order_id`, documents carry `source`. `{"$ne": ""}` matches every
+    # non-empty value, i.e. all of them.
+    discriminators = {
+        "orders": {"order_id": {"$ne": ""}},
+        "documents": {"source": {"$ne": ""}},
+    }
+    for name, coll in (
+        ("orders", get_orders_collection()),
+        ("documents", get_documents_collection()),
+    ):
+        if coll.count() == 0:
+            continue
+        coll.delete(where=discriminators[name])
 
 
 # ---------- orders ----------

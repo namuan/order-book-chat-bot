@@ -27,7 +27,8 @@ dev = [
 # Optional PDF backends - install only what you need.
 # camelot needs Ghostscript on the system PATH.
 pdf-camelot = ["camelot-py>=0.11"]
-pdf-vision = []  # uses the same httpx we already have
+# The `vision` backend uses httpx (already a dep) plus an API key;
+# no extra packages are required.
 
 [project.scripts]
 order-book-server = "app.server:main"

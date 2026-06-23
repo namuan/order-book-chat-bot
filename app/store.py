@@ -16,7 +16,6 @@ can pull from orders AND documents in one call.
 from __future__ import annotations
 
 import os
-from enum import Enum
 from functools import lru_cache
 from typing import Iterable, Optional
 
@@ -34,10 +33,6 @@ class Embedder:
 
     def __init__(self, model_name: str):
         self.model = SentenceTransformer(model_name)
-        # `get_embedding_dimension` is the new name; fall back for older versions.
-        get_dim = getattr(self.model, "get_embedding_dimension", None) \
-            or self.model.get_sentence_embedding_dimension
-        self.dim = get_dim()
 
     def embed(self, texts: list[str]) -> list[list[float]]:
         # normalize_embeddings=True gives us cosine-sim via dot product
@@ -56,11 +51,6 @@ def get_embedder() -> Embedder:
 
 
 # --- collections ---
-
-class Collection(str, Enum):
-    ORDERS = "orders"
-    DOCUMENTS = "documents"
-
 
 def _chroma_client() -> chromadb.api.ClientAPI:
     persist_dir = os.environ.get("CHROMA_PERSIST_DIR", "./data/chroma")

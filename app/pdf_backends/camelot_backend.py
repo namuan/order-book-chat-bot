@@ -17,12 +17,17 @@ caller falls through to the next configured backend.
 """
 from __future__ import annotations
 
+import math
 import warnings
 from pathlib import Path
 
 import pdfplumber
 
-from ..pdf_extract import TableResult, _table_to_markdown
+from ..pdf_extract import (
+    TableResult,
+    _looks_tabular,
+    _table_to_markdown,
+)
 
 
 class _CamelotBackend:
@@ -42,20 +47,37 @@ class _CamelotBackend:
             warnings.warn(f"camelot not installed: {e}")
             return []
 
-        results: list[TableResult] = []
         page_1based = str(page_index + 1)
+        results: list[TableResult] = []
 
         # Try lattice first (bordered tables). If it raises (e.g. ghostscript
         # missing), we silently skip and try stream.
+        lattice_tables = self._read(camelot, pdf_path, page_1based, "lattice")
+        results.extend(self._tables_to_results(lattice_tables))
+
+        # If lattice got nothing and the page looks tabular-ish, try stream.
+        if not results and _looks_tabular(page_text):
+            stream_tables = self._read(
+                camelot, pdf_path, page_1based, "stream", row_tol=2, column_tol=2
+            )
+            results.extend(self._tables_to_results(stream_tables))
+
+        return results
+
+    @staticmethod
+    def _read(camelot, pdf_path, page_1based, flavor, **kwargs) -> list:
         try:
-            lattice_tables = camelot.read_pdf(
-                str(pdf_path), pages=page_1based, flavor="lattice"
+            return camelot.read_pdf(
+                str(pdf_path), pages=page_1based, flavor=flavor, **kwargs
             )
         except Exception as e:
-            warnings.warn(f"camelot lattice failed on p{page_1based}: {e}")
-            lattice_tables = []
+            warnings.warn(f"camelot {flavor} failed on p{page_1based}: {e}")
+            return []
 
-        for t in lattice_tables:
+    @staticmethod
+    def _tables_to_results(tables) -> list[TableResult]:
+        results: list[TableResult] = []
+        for t in tables:
             df = t.df
             header = [str(c) for c in df.columns.tolist()]
             body = [_normalize_row(r) for r in df.values.tolist()]
@@ -64,53 +86,13 @@ class _CamelotBackend:
                 continue
             md = _table_to_markdown(table)
             if md:
-                results.append(TableResult(markdown=md, backend=self.name, raw_rows=table))
-
-        # If lattice got nothing and the page looks tabular-ish, try stream
-        if not results and self._looks_tabular(page_text):
-            try:
-                stream_tables = camelot.read_pdf(
-                    str(pdf_path),
-                    pages=page_1based,
-                    flavor="stream",
-                    # Generous defaults; tune in the field.
-                    row_tol=2,
-                    column_tol=2,
-                )
-            except Exception as e:
-                warnings.warn(f"camelot stream failed on p{page_1based}: {e}")
-                stream_tables = []
-
-            for t in stream_tables:
-                df = t.df
-                header = [str(c) for c in df.columns.tolist()]
-                body = [_normalize_row(r) for r in df.values.tolist()]
-                table = _rotate_header([header] + body)
-                if len(table) < 2:
-                    continue
-                md = _table_to_markdown(table)
-                if md:
-                    results.append(
-                        TableResult(markdown=md, backend=self.name, raw_rows=table)
-                    )
-
+                results.append(TableResult(markdown=md, backend="camelot", raw_rows=table))
         return results
-
-    @staticmethod
-    def _looks_tabular(text: str) -> bool:
-        if not text:
-            return False
-        lines = [l for l in text.splitlines() if l.strip()]
-        if len(lines) < 4:
-            return False
-        short = sum(1 for l in lines if len(l) <= 80)
-        return short / len(lines) > 0.7
 
 
 def _normalize_row(row) -> list[str | None]:
     """Coerce a Camelot DataFrame row to the (str|None) shape the
     orchestrator expects. NaN/None -> None, everything else -> str."""
-    import math
     out: list[str | None] = []
     for c in row:
         if c is None:
@@ -163,9 +145,6 @@ def _rotate_header(table: list[list[str | None]]) -> list[list[str | None]]:
                 rows = rows[i:]
                 break
     return rows
-
-
-backend = _CamelotBackend()
 
 
 backend = _CamelotBackend()
