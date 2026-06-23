@@ -1,0 +1,17 @@
+# uv
+.venv/
+uv.lock
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# env / data
+.env
+data/chroma/
+data/chroma_test/
+
+# os
+.DS_Store

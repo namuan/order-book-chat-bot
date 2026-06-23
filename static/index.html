@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Order Book Search</title>
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --panel: #141823;
+      --panel-2: #1b2030;
+      --line: #232a3d;
+      --text: #e6e8ee;
+      --muted: #8b93a8;
+      --accent: #6ee7b7;
+      --accent-2: #93c5fd;
+      --warn: #fbbf24;
+      --hit: #fde68a;
+      --badge-orders: #6ee7b7;
+      --badge-docs: #f0abfc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: radial-gradient(1200px 600px at 20% -10%, #1c2440 0%, var(--bg) 60%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      padding: 24px 32px 8px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+    header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      margin: 0;
+    }
+    header h1 span { color: var(--accent); }
+    header .stats { font-size: 12px; color: var(--muted); }
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 16px 32px 60px;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 880px) {
+      main { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px 18px;
+    }
+    .panel h2 {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 10px;
+      font-weight: 600;
+    }
+    .tabs {
+      display: inline-flex;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 12px;
+    }
+    .tab {
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+    }
+    .tab.active { background: #2a3350; color: var(--text); }
+    .src-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+    .src-pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .src-pill.active { background: #2a3350; color: var(--text); border-color: #3b4866; }
+    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    textarea, input[type="text"] {
+      width: 100%;
+      background: #0e1220;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font: inherit;
+      font-size: 14px;
+      outline: none;
+    }
+    textarea { resize: vertical; min-height: 70px; }
+    textarea:focus, input[type="text"]:focus { border-color: #3b82f6; }
+    .row { display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+    button {
+      background: var(--accent);
+      color: #0b0d12;
+      border: 0;
+      padding: 9px 16px;
+      font-weight: 600;
+      font-size: 13px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button.secondary { background: #2a3350; color: var(--text); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .examples { display: flex; flex-wrap: wrap; gap: 6px; }
+    .examples button {
+      background: transparent;
+      color: var(--accent-2);
+      border: 1px solid #2a3350;
+      padding: 5px 10px;
+      font-weight: 500;
+      font-size: 12px;
+    }
+    .examples button:hover { background: #1a2240; }
+    .answer {
+      margin-top: 14px;
+      background: #0e1220;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+      white-space: pre-wrap;
+      line-height: 1.55;
+      font-size: 14px;
+    }
+    .answer:empty { display: none; }
+    .meta { font-size: 11px; color: var(--muted); margin-top: 6px; }
+    .hit {
+      background: #0e1220;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-top: 10px;
+    }
+    .hit-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .hit-id { font-weight: 600; color: var(--accent-2); font-size: 13px; }
+    .hit-score { font-size: 11px; color: var(--muted); }
+    .hit-doc { font-size: 13px; color: #cbd5e1; line-height: 1.5; white-space: pre-wrap; }
+    .hit-doc mark {
+      background: #3a2f00;
+      color: var(--hit);
+      padding: 0 2px;
+      border-radius: 3px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .badge.orders { background: rgba(110, 231, 183, 0.15); color: var(--badge-orders); }
+    .badge.documents { background: rgba(240, 171, 252, 0.15); color: var(--badge-docs); }
+    .source-list { font-size: 12px; color: var(--muted); }
+    .source-list .row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--line);
+      margin: 0;
+    }
+    .source-list .row:last-child { border-bottom: 0; }
+    .source-list .name { color: var(--text); font-family: ui-monospace, SFMono-Regular, monospace; font-size: 11px; }
+    .source-list .chunks { color: var(--muted); font-size: 11px; }
+    .filter-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .filter-row input { font-size: 12px; padding: 7px 9px; }
+    .section-title {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 18px 0 8px;
+    }
+    .empty { color: var(--muted); font-size: 12px; font-style: italic; padding: 6px 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Order Book <span>vector search</span></h1>
+    <div class="stats" id="stats">indexed: …</div>
+  </header>
+  <main>
+    <aside class="panel">
+      <h2>Indexed</h2>
+      <div class="source-list" id="source-list">
+        <div class="empty">loading…</div>
+      </div>
+    </aside>
+
+    <section class="panel">
+      <div class="tabs">
+        <div class="tab active" data-mode="chat">Chat</div>
+        <div class="tab" data-mode="search">Search</div>
+      </div>
+
+      <label style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">Search across</label>
+      <div class="src-pills">
+        <div class="src-pill active" data-src="orders">Orders</div>
+        <div class="src-pill active" data-src="documents">Documents</div>
+      </div>
+
+      <label id="qlabel" for="q">Ask about the order book</label>
+      <textarea id="q" placeholder="e.g. Which customers ordered a truck they want to use for towing?"></textarea>
+
+      <div class="section-title">Optional structured filters</div>
+      <div class="filter-row">
+        <input id="f-model" type="text" placeholder="model (e.g. R1T)" />
+        <input id="f-status" type="text" placeholder="status (e.g. in_production)" />
+        <input id="f-region" type="text" placeholder="region (e.g. CA)" />
+        <input id="f-maxprice" type="text" placeholder="max MSRP (USD)" />
+      </div>
+
+      <div class="row">
+        <button id="go">Run</button>
+        <button id="clear" class="secondary">Clear</button>
+        <div class="examples">
+          <button data-q="Show me R1T Adventure orders in production under $85k">R1T Adventure in production</button>
+          <button data-q="Which truck is configured for towing a horse trailer?">Tow use in TX</button>
+          <button data-q="What is the MSRP of the Pearl White Model 3?">Pearl White Model 3</button>
+          <button data-q="What configurations include premium audio?">Premium audio</button>
+        </div>
+      </div>
+
+      <div id="answer" class="answer"></div>
+      <div id="meta" class="meta"></div>
+
+      <div class="section-title" id="hits-title" style="display:none;">Retrieved</div>
+      <div id="hits"></div>
+    </section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let mode = "chat";
+    const selectedSources = new Set(["orders", "documents"]);
+
+    function setMode(m) {
+      mode = m;
+      document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.mode === m));
+      $("qlabel").textContent = m === "chat" ? "Ask about the order book" : "Search the order book";
+      $("go").textContent = m === "chat" ? "Ask" : "Search";
+    }
+    document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => setMode(t.dataset.mode)));
+
+    document.querySelectorAll(".src-pill").forEach(p => {
+      p.addEventListener("click", () => {
+        const s = p.dataset.src;
+        if (selectedSources.has(s)) {
+          if (selectedSources.size === 1) return; // keep at least one
+          selectedSources.delete(s);
+        } else {
+          selectedSources.add(s);
+        }
+        p.classList.toggle("active", selectedSources.has(s));
+      });
+    });
+
+    function buildFilters() {
+      const f = {};
+      const model = $("f-model").value.trim();
+      const status = $("f-status").value.trim();
+      const region = $("f-region").value.trim();
+      const maxp = parseInt($("f-maxprice").value.trim(), 10);
+      if (model) f.model = model;
+      if (status) f.status = status;
+      if (region) f.customer_region = region;
+      if (!isNaN(maxp) && maxp > 0) f.msrp_usd = { "$lte": maxp };
+      return Object.keys(f).length ? f : null;
+    }
+
+    function highlight(text, q) {
+      if (!q) return text;
+      const terms = q.split(/\s+/).filter(w => w.length > 2);
+      let out = text;
+      for (const t of terms) {
+        const re = new RegExp(`(${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "ig");
+        out = out.replace(re, "<mark>$1</mark>");
+      }
+      return out;
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+      }[c]));
+    }
+
+    async function refreshStats() {
+      try {
+        const r = await fetch("/stats");
+        const d = await r.json();
+        $("stats").textContent = `${d.indexed_orders} orders, ${d.indexed_documents} doc chunks`;
+        const list = $("source-list");
+        if (!d.document_sources || d.document_sources.length === 0) {
+          list.innerHTML = `<div class="empty">no documents indexed yet</div>`;
+        } else {
+          list.innerHTML = d.document_sources.map(s => `
+            <div class="row">
+              <div class="name" title="${escapeHtml(s.source)}">${escapeHtml(s.source)}</div>
+              <div class="chunks">${s.chunks} chunk${s.chunks === 1 ? "" : "s"}</div>
+            </div>
+          `).join("");
+        }
+      } catch (e) {
+        $("stats").textContent = "stats unavailable";
+      }
+    }
+    refreshStats();
+
+    $("go").addEventListener("click", run);
+    $("q").addEventListener("keydown", (e) => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") run(); });
+    document.querySelectorAll(".examples button").forEach(b => {
+      b.addEventListener("click", () => { $("q").value = b.dataset.q; run(); });
+    });
+    $("clear").addEventListener("click", () => {
+      $("q").value = ""; $("answer").textContent = ""; $("meta").textContent = ""; $("hits").innerHTML = "";
+      $("hits-title").style.display = "none";
+    });
+
+    async function run() {
+      const q = $("q").value.trim();
+      if (!q) return;
+      const sources = Array.from(selectedSources);
+      const body = {
+        question: q, query: q, top_k: 5, filters: buildFilters(), sources,
+      };
+      const endpoint = mode === "chat" ? "/chat" : "/search";
+      $("go").disabled = true;
+      $("answer").textContent = "Thinking…";
+      $("meta").textContent = "";
+      $("hits").innerHTML = "";
+      $("hits-title").style.display = "none";
+      try {
+        const r = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.detail || `HTTP ${r.status}`);
+        $("answer").textContent = mode === "chat" ? d.answer : "(search mode — see retrieved chunks below)";
+        const used = d.used_model ? ` · model: ${d.used_model}` : "";
+        const srcCount = d.hits.reduce((acc, h) => { acc[h.source] = (acc[h.source] || 0) + 1; return acc; }, {});
+        const srcSummary = Object.entries(srcCount).map(([k, v]) => `${v} ${k}`).join(", ");
+        $("meta").textContent = `${d.hits.length} result(s) — ${srcSummary}${used}`;
+        if (d.hits.length) {
+          $("hits-title").style.display = "block";
+          for (const h of d.hits) {
+            const el = document.createElement("div");
+            el.className = "hit";
+            const subline = h.source === "documents"
+              ? `${h.metadata.source || ""}${h.metadata.page ? " · p" + h.metadata.page : ""}${h.metadata.kind ? " · " + h.metadata.kind : ""}`
+              : (h.metadata.model || "") + (h.metadata.trim ? " " + h.metadata.trim : "");
+            el.innerHTML = `
+              <div class="hit-head">
+                <div>
+                  <span class="badge ${h.source}">${h.source}</span>
+                  <span class="hit-id" style="margin-left:6px;">${h.id}</span>
+                </div>
+                <div class="hit-score">score ${h.score}</div>
+              </div>
+              <div class="meta" style="margin:0 0 6px;">${escapeHtml(subline)}</div>
+              <div class="hit-doc">${highlight(escapeHtml(h.document), q)}</div>
+            `;
+            $("hits").appendChild(el);
+          }
+        }
+      } catch (e) {
+        $("answer").textContent = "Error: " + e.message;
+      } finally {
+        $("go").disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

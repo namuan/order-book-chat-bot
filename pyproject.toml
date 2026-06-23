@@ -1,0 +1,48 @@
+[project]
+name = "order-book-chat-bot"
+version = "0.1.0"
+description = "Vector search + RAG chat over a custom vehicle configurator's order book."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "pydantic>=2.6",
+    "chromadb>=0.4.24",
+    "sentence-transformers>=2.6",
+    "numpy>=1.26",
+    "httpx>=0.27",
+    "python-dotenv>=1.0",
+    "pypdf>=4.0",
+    "pdfplumber>=0.10",
+    "pypdfium2>=4.0",
+    "reportlab>=4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+]
+# Optional PDF backends - install only what you need.
+# camelot needs Ghostscript on the system PATH.
+pdf-camelot = ["camelot-py>=0.11"]
+pdf-vision = []  # uses the same httpx we already have
+
+[project.scripts]
+order-book-server = "app.server:main"
+order-book-ingest = "scripts.ingest:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app", "scripts"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -q"
+
+[tool.uv]
+package = true
