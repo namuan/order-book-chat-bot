@@ -18,7 +18,7 @@ structured filter) search and a RAG chat endpoint.
 | Source pill filter (Orders only) | [![source filter](assets/07-source-filter.jpg)](assets/07-source-filter.jpg) |
 | Empty state | [![empty state](assets/08-empty-state.jpg)](assets/08-empty-state.jpg) |
 
-To regenerate these, run:
+Screenshots are captured in light mode. To regenerate:
 
 ```bash
 uv run python -m scripts.take_screenshots

@@ -18,12 +18,72 @@
       --hit: #fde68a;
       --badge-orders: #6ee7b7;
       --badge-docs: #f0abfc;
+      --input-bg: #0e1220;
+      --tab-active-bg: #2a3350;
+      --btn-secondary-bg: #2a3350;
+      --example-border: #2a3350;
+      --example-hover-bg: #1a2240;
+      --hit-bg: #0e1220;
+      --hit-doc: #cbd5e1;
+      --mark-bg: #3a2f00;
+      --mark-text: #fde68a;
+      --bg-gradient: radial-gradient(1200px 600px at 20% -10%, #1c2440 0%, #0b0d12 60%);
+    }
+    :root[data-theme="light"] {
+      --bg: #f4f6f9;
+      --panel: #ffffff;
+      --panel-2: #e9edf2;
+      --line: #d1d9e6;
+      --text: #1a1a2e;
+      --muted: #64748b;
+      --accent: #059669;
+      --accent-2: #2563eb;
+      --warn: #d97706;
+      --hit: #92400e;
+      --badge-orders: #059669;
+      --badge-docs: #7c3aed;
+      --input-bg: #ffffff;
+      --tab-active-bg: #e2e8f0;
+      --btn-secondary-bg: #e2e8f0;
+      --example-border: #d1d9e6;
+      --example-hover-bg: #e9edf2;
+      --hit-bg: #f8fafc;
+      --hit-doc: #374151;
+      --mark-bg: #fef3c7;
+      --mark-text: #92400e;
+      --bg-gradient: radial-gradient(1200px 600px at 20% -10%, #e0e7ff 0%, #f4f6f9 60%);
+    }
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) {
+        --bg: #f4f6f9;
+        --panel: #ffffff;
+        --panel-2: #e9edf2;
+        --line: #d1d9e6;
+        --text: #1a1a2e;
+        --muted: #64748b;
+        --accent: #059669;
+        --accent-2: #2563eb;
+        --warn: #d97706;
+        --hit: #92400e;
+        --badge-orders: #059669;
+        --badge-docs: #7c3aed;
+        --input-bg: #ffffff;
+        --tab-active-bg: #e2e8f0;
+        --btn-secondary-bg: #e2e8f0;
+        --example-border: #d1d9e6;
+        --example-hover-bg: #e9edf2;
+        --hit-bg: #f8fafc;
+        --hit-doc: #374151;
+        --mark-bg: #fef3c7;
+        --mark-text: #92400e;
+        --bg-gradient: radial-gradient(1200px 600px at 20% -10%, #e0e7ff 0%, #f4f6f9 60%);
+      }
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-      background: radial-gradient(1200px 600px at 20% -10%, #1c2440 0%, var(--bg) 60%);
+      background: var(--bg-gradient);
       color: var(--text);
       min-height: 100vh;
     }
@@ -82,7 +142,7 @@
       cursor: pointer;
       user-select: none;
     }
-    .tab.active { background: #2a3350; color: var(--text); }
+    .tab.active { background: var(--tab-active-bg); color: var(--text); }
     .src-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
     .src-pill {
       padding: 4px 10px;
@@ -94,11 +154,11 @@
       cursor: pointer;
       user-select: none;
     }
-    .src-pill.active { background: #2a3350; color: var(--text); border-color: #3b4866; }
+    .src-pill.active { background: var(--tab-active-bg); color: var(--text); border-color: var(--line); }
     label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
     textarea, input[type="text"] {
       width: 100%;
-      background: #0e1220;
+      background: var(--input-bg);
       color: var(--text);
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -120,21 +180,21 @@
       border-radius: 8px;
       cursor: pointer;
     }
-    button.secondary { background: #2a3350; color: var(--text); }
+    button.secondary { background: var(--btn-secondary-bg); color: var(--text); }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
     .examples { display: flex; flex-wrap: wrap; gap: 6px; }
     .examples button {
       background: transparent;
       color: var(--accent-2);
-      border: 1px solid #2a3350;
+      border: 1px solid var(--example-border);
       padding: 5px 10px;
       font-weight: 500;
       font-size: 12px;
     }
-    .examples button:hover { background: #1a2240; }
+    .examples button:hover { background: var(--example-hover-bg); }
     .answer {
       margin-top: 14px;
-      background: #0e1220;
+      background: var(--hit-bg);
       border: 1px solid var(--line);
       border-radius: 8px;
       padding: 14px 16px;
@@ -145,7 +205,7 @@
     .answer:empty { display: none; }
     .meta { font-size: 11px; color: var(--muted); margin-top: 6px; }
     .hit {
-      background: #0e1220;
+      background: var(--hit-bg);
       border: 1px solid var(--line);
       border-radius: 8px;
       padding: 12px 14px;
@@ -161,10 +221,10 @@
     }
     .hit-id { font-weight: 600; color: var(--accent-2); font-size: 13px; }
     .hit-score { font-size: 11px; color: var(--muted); }
-    .hit-doc { font-size: 13px; color: #cbd5e1; line-height: 1.5; white-space: pre-wrap; }
+    .hit-doc { font-size: 13px; color: var(--hit-doc); line-height: 1.5; white-space: pre-wrap; }
     .hit-doc mark {
-      background: #3a2f00;
-      color: var(--hit);
+      background: var(--mark-bg);
+      color: var(--mark-text);
       padding: 0 2px;
       border-radius: 3px;
     }
@@ -205,7 +265,10 @@
 <body>
   <header>
     <h1>Order Guide <span>chat bot</span></h1>
-    <div class="stats" id="stats">indexed: …</div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="stats" id="stats">indexed: …</div>
+      <button id="theme-toggle" title="Toggle light/dark mode" style="background:none;border:1px solid var(--line);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:14px;line-height:1;color:var(--muted);">🌙</button>
+    </div>
   </header>
   <main>
     <aside class="panel">
@@ -334,6 +397,29 @@
       }
     }
     refreshStats();
+
+    // --- theme toggle ---
+    function applyTheme(theme) {
+      if (theme === "light") {
+        document.documentElement.setAttribute("data-theme", "light");
+        $("theme-toggle").textContent = "☀️";
+      } else if (theme === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+        $("theme-toggle").textContent = "🌙";
+      } else {
+        document.documentElement.removeAttribute("data-theme");
+        $("theme-toggle").textContent = window.matchMedia("(prefers-color-scheme: light)").matches ? "☀️" : "🌙";
+      }
+      try { localStorage.setItem("theme", theme || ""); } catch {}
+    }
+    const saved = localStorage.getItem("theme");
+    if (saved) applyTheme(saved);
+    $("theme-toggle").addEventListener("click", () => {
+      const cur = document.documentElement.getAttribute("data-theme");
+      if (cur === "light") applyTheme("dark");
+      else if (cur === "dark") applyTheme(null);   // back to system
+      else applyTheme("light");
+    });
 
     $("go").addEventListener("click", run);
     $("q").addEventListener("keydown", (e) => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") run(); });

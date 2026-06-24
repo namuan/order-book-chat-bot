@@ -7,7 +7,8 @@ screenshots of the key UI features.
 Usage:
     uv run python -m scripts.take_screenshots
 
-Output: screenshots/  (10+ PNG files documenting each feature)
+Output: screenshots/ (PNG originals) + assets/ (optimised JPEGs for README).
+Light mode is forced so screenshots show the light theme.
 """
 
 from __future__ import annotations
@@ -76,9 +77,13 @@ def start_server() -> subprocess.Popen:
 def take_screenshots(page):
     """Navigate the UI and capture screenshots of each feature."""
 
-    # ---- 1. Home page with stats ----
+    # ---- 0. Activate light mode ----
     page.goto(BASE_URL)
     page.wait_for_load_state("networkidle")
+    page.evaluate("localStorage.setItem('theme', 'light'); window.location.reload()")
+    page.wait_for_load_state("networkidle")
+
+    # ---- 1. Home page with stats ----
     page.wait_for_timeout(1000)  # let the stats fetch finish
     page.screenshot(
         path=str(SCREENSHOTS_DIR / "01-home-with-data.png"),
@@ -162,25 +167,33 @@ def take_screenshots(page):
     )
     print("  08  empty-state")
 
-    # ---- 9. Swagger API docs ----
-    page.goto(f"{BASE_URL}/docs")
-    page.wait_for_load_state("networkidle")
-    page.wait_for_timeout(2000)
-    page.screenshot(
-        path=str(SCREENSHOTS_DIR / "09-api-docs.png"),
-        full_page=True,
-    )
-    print("  09  api-docs")
 
-    # ---- 10. OpenAPI JSON ----
-    page.goto(f"{BASE_URL}/openapi.json")
-    page.wait_for_load_state("networkidle")
-    page.wait_for_timeout(500)
-    page.screenshot(
-        path=str(SCREENSHOTS_DIR / "10-openapi-json.png"),
-        full_page=True,
-    )
-    print("  10  openapi-json")
+
+
+# ---------------------------------------------------------------------------
+# post-processing: convert PNGs → optimised JPEGs in assets/
+# ---------------------------------------------------------------------------
+
+def optimise_screenshots() -> None:
+    """Convert PNG screenshots to resized, compressed JPEGs in assets/."""
+    import subprocess as sp
+
+    assets_dir = PROJECT_ROOT / "assets"
+    assets_dir.mkdir(exist_ok=True)
+
+    for png in sorted(SCREENSHOTS_DIR.glob("*.png")):
+        jpg = assets_dir / f"{png.stem}.jpg"
+        sp.run(
+            ["sips", "-z", "720", "1024",
+             "-s", "format", "jpeg",
+             "-s", "formatOptions", "80",
+             str(png), "--out", str(jpg)],
+            capture_output=True, check=True,
+        )
+        size_kb = jpg.stat().st_size / 1024
+        print(f"  {jpg.name}  ({size_kb:.0f} KB)")
+
+    print(f"  -> {assets_dir}")
 
 
 # ---------------------------------------------------------------------------
@@ -220,7 +233,11 @@ def main() -> None:
             take_screenshots(page)
             browser.close()
 
-        print(f"\nDone. Screenshots saved to: {SCREENSHOTS_DIR}")
+        print("\n--- Optimising screenshots ---")
+        optimise_screenshots()
+
+        print(f"\nDone. PNG originals in: {SCREENSHOTS_DIR}")
+        print(f"         Optimised JPEGs in: {PROJECT_ROOT / 'assets'}")
 
     finally:
         server_proc.terminate()
