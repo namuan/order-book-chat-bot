@@ -5,6 +5,8 @@ vehicle configurator's order guide and PDF documents. Embeds with
 sentence-transformers, stores in ChromaDB, and exposes hybrid (semantic +
 structured filter) search and a RAG chat endpoint.
 
+This project is licensed under the [MIT License](LICENSE).
+
 ## Architecture
 
 ```
@@ -32,37 +34,9 @@ structured filter) search and a RAG chat endpoint.
 | LLM          | Stub by default; OpenAI-compatible if `OPENAI_API_KEY` is set |
 | UI           | Single static HTML page, no build step              |
 
-## Layout
-
-```
-app/
-  models.py        # Order schema, derived search document
-  store.py         # Embedder + ChromaDB wrapper + unified search
-  pdf_extract.py   # Backend-pluggable PDF orchestrator
-  pdf_backends/
-    camelot_backend.py  # Optional: Camelot (lattice + stream)
-    vision_backend.py   # Optional: vision LLM (OpenAI / Anthropic)
-  llm.py           # LLM provider abstraction (stub | openai)
-  server.py        # FastAPI app
-scripts/
-  ingest.py                 # JSON orders -> orders collection
-  ingest_pdf.py             # PDF(s) -> documents collection
-  make_sample_pdfs.py       # Generate bordered configurator PDFs
-  make_borderless_pdf.py    # Generate a borderless-table PDF for fallback testing
-data/
-  sample_orders.json
-  sample_pdfs/         # Created by `python -m scripts.make_sample_pdfs`
-static/
-  index.html       # UI
-tests/
-  test_pipeline.py     # orders + pdf integration tests
-  test_pdf_backends.py # pdfplumber / camelot / vision backend tests
-```
-
 ## Setup (uv)
 
 ```bash
-cd /Users/nnn/workspace/order-guide-chat-bot
 uv sync --extra dev          # creates .venv, installs deps, writes uv.lock
 cp .env.example .env
 ```
