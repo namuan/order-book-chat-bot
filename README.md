@@ -28,19 +28,37 @@ uv run python -m scripts.take_screenshots
 
 ## Architecture
 
-```
-            ┌────────────────────────────────────────────────────┐
-            │            FastAPI (app/server.py)                │
-            │                                                    │
-   UI  ───► │  /search  ──►  embedder ──►  ChromaDB  ──► hits    │
-            │  /chat    ──►  embedder ──►  ChromaDB  ──► LLM    │
-            │  /orders  ──►  embedder ──►  orders coll.          │
-            │  /documents──► embedder ──►  docs   coll.         │
-            │                                                    │
-            └────────────────────────────────────────────────────┘
-                ▲                              ▲
-                │                              │
-           static/index.html            PDFs, JSON orders
+```mermaid
+flowchart LR
+    subgraph UI[" "]
+        SPA["static/index.html"]
+    end
+
+    subgraph API["FastAPI (app/server.py)"]
+        direction TB
+        SE[/search/] --> EMB[Embedder]
+        CH[/chat/] --> EMB
+        OR[/orders/] --> EMB
+        DO[/documents/] --> EMB
+    end
+
+    subgraph DB["ChromaDB"]
+        OC[(orders collection<br/>structured records)]
+        DC[(documents collection<br/>free-text chunks)]
+    end
+
+    SPA -->|HTTP| API
+
+    EMB --> OC
+    EMB --> DC
+
+    SE --> HITS[Hits]
+    CH --> LLM[LLM Stub / OpenAI]
+    LLM --> ANS[Answer]
+
+    SRC[PDFs, JSON orders] -->|ingested by| SCR[Ingest scripts]
+    SCR --> OC
+    SCR --> DC
 ```
 
 | Layer        | Choice                                              |
