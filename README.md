@@ -79,6 +79,8 @@ cp .env.example .env
 The first sync downloads the embedding model `all-MiniLM-L6-v2` (~90 MB)
 into the Hugging Face cache, so the first run is slower than subsequent ones.
 
+All common tasks are also available as `make` targets — run `make help` to list them.
+
 ## Ingest data
 
 ### Structured orders (JSON)
