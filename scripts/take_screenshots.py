@@ -184,7 +184,7 @@ def optimise_screenshots() -> None:
     for png in sorted(SCREENSHOTS_DIR.glob("*.png")):
         jpg = assets_dir / f"{png.stem}.jpg"
         sp.run(
-            ["sips", "-z", "720", "1024",
+            ["sips", "-Z", "1024",
              "-s", "format", "jpeg",
              "-s", "formatOptions", "80",
              str(png), "--out", str(jpg)],
