@@ -1,7 +1,7 @@
 [project]
-name = "order-book-chat-bot"
+name = "order-guide-chat-bot"
 version = "0.1.0"
-description = "Vector search + RAG chat over a custom vehicle configurator's order book."
+description = "Vector search + RAG chat over a custom vehicle configurator's order guide."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -31,8 +31,8 @@ pdf-camelot = ["camelot-py>=0.11"]
 # no extra packages are required.
 
 [project.scripts]
-order-book-server = "app.server:main"
-order-book-ingest = "scripts.ingest:main"
+order-guide-server = "app.server:main"
+order-guide-ingest = "scripts.ingest:main"
 
 [build-system]
 requires = ["hatchling"]

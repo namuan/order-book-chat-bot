@@ -70,7 +70,7 @@ def _col(name: str):
 
 
 def get_orders_collection():
-    name = os.environ.get("COLLECTION_NAME", "order_books")
+    name = os.environ.get("COLLECTION_NAME", "order_guides")
     return _col(name)
 
 

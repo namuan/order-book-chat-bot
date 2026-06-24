@@ -1,5 +1,5 @@
 """
-FastAPI app exposing the order-book vector search + chat (RAG) endpoints.
+FastAPI app exposing the order-guide vector search + chat (RAG) endpoints.
 
 Searches are unified: the chat and search endpoints query BOTH the
 structured Order collection and the free-text document collection, merge

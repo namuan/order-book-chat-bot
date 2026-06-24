@@ -4,7 +4,7 @@ Ingest PDFs into the document collection.
 Usage:
     python -m scripts.ingest_pdf path/to/file.pdf
     python -m scripts.ingest_pdf path/to/folder
-    python -m scripts.ingest_pdf a.pdf b.pdf c.pdf --kind order_book
+    python -m scripts.ingest_pdf a.pdf b.pdf c.pdf --kind order_guide
 
 PDF table extraction is pluggable. By default we use pdfplumber; pass
 `--fallback camelot` and/or `--fallback vision` to enable additional

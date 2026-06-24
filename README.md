@@ -1,7 +1,7 @@
-# Order Book Vector Search
+# Order Guide Chat Bot
 
 A small, self-contained vector search engine + chat bot over a custom
-vehicle configurator's order book and PDF documents. Embeds with
+vehicle configurator's order guide and PDF documents. Embeds with
 sentence-transformers, stores in ChromaDB, and exposes hybrid (semantic +
 structured filter) search and a RAG chat endpoint.
 
@@ -62,7 +62,7 @@ tests/
 ## Setup (uv)
 
 ```bash
-cd /Users/nnn/temp/order-book-chat-bot
+cd /Users/nnn/workspace/order-guide-chat-bot
 uv sync --extra dev          # creates .venv, installs deps, writes uv.lock
 cp .env.example .env
 ```
@@ -90,7 +90,7 @@ uv run python -m scripts.ingest_pdf data/sample_pdfs
 # -> ingested 3 chunk(s) from 3 file(s) (documents collection: 0 -> 3)
 
 # Tag PDFs with a custom kind
-uv run python -m scripts.ingest_pdf path/to/folder --kind order_book
+uv run python -m scripts.ingest_pdf path/to/folder --kind order_guide
 ```
 
 #### Table extraction backends

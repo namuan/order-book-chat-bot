@@ -12,7 +12,7 @@ import os
 from pathlib import Path
 
 # Run BEFORE importing the app so the env vars take effect
-os.environ.setdefault("COLLECTION_NAME", "order_books_test")
+os.environ.setdefault("COLLECTION_NAME", "order_guides_test")
 os.environ.setdefault("DOCS_COLLECTION_NAME", "documents_test")
 os.environ.setdefault("CHROMA_PERSIST_DIR", "./data/chroma_test")
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Order Book Search</title>
+  <title>Order Guide Chat</title>
   <style>
     :root {
       --bg: #0b0d12;
@@ -204,7 +204,7 @@
 </head>
 <body>
   <header>
-    <h1>Order Book <span>vector search</span></h1>
+    <h1>Order Guide <span>chat bot</span></h1>
     <div class="stats" id="stats">indexed: …</div>
   </header>
   <main>
@@ -227,7 +227,7 @@
         <div class="src-pill active" data-src="documents">Documents</div>
       </div>
 
-      <label id="qlabel" for="q">Ask about the order book</label>
+      <label id="qlabel" for="q">Ask about the order guide</label>
       <textarea id="q" placeholder="e.g. Which customers ordered a truck they want to use for towing?"></textarea>
 
       <div class="section-title">Optional structured filters</div>
@@ -265,7 +265,7 @@
     function setMode(m) {
       mode = m;
       document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.mode === m));
-      $("qlabel").textContent = m === "chat" ? "Ask about the order book" : "Search the order book";
+      $("qlabel").textContent = m === "chat" ? "Ask about the order guide" : "Search the order guide";
       $("go").textContent = m === "chat" ? "Ask" : "Search";
     }
     document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => setMode(t.dataset.mode)));
