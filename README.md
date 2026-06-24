@@ -5,8 +5,6 @@ vehicle configurator's order guide and PDF documents. Embeds with
 sentence-transformers, stores in ChromaDB, and exposes hybrid (semantic +
 structured filter) search and a RAG chat endpoint.
 
-This project is licensed under the [MIT License](LICENSE).
-
 ## Screenshots
 
 | Feature | Preview |
@@ -273,3 +271,7 @@ hybrid (filter + semantic) queries, PDF extraction, PDF ingest,
 merged cross-collection search, the pdfplumber backend, the Camelot
 fallback (lattice + stream with header rotation), and the vision
 backend (mocked LLM calls).
+
+---
+
+This project is licensed under the [MIT License](LICENSE).
