@@ -7,6 +7,25 @@ structured filter) search and a RAG chat endpoint.
 
 This project is licensed under the [MIT License](LICENSE).
 
+## Screenshots
+
+| Feature | Preview |
+|---------|---------|
+| Home page with indexed data | [![home](assets/01-home-with-data.jpg)](assets/01-home-with-data.jpg) |
+| Chat mode — quick example query | [![chat example](assets/02-chat-example.jpg)](assets/02-chat-example.jpg) |
+| Chat mode — manual question | [![chat query](assets/03-chat-query.jpg)](assets/03-chat-query.jpg) |
+| Search tab | [![search tab](assets/04-search-tab.jpg)](assets/04-search-tab.jpg) |
+| Search results with highlights | [![search results](assets/05-search-results.jpg)](assets/05-search-results.jpg) |
+| Structured filters applied | [![filtered search](assets/06-filtered-search.jpg)](assets/06-filtered-search.jpg) |
+| Source pill filter (Orders only) | [![source filter](assets/07-source-filter.jpg)](assets/07-source-filter.jpg) |
+| Empty state | [![empty state](assets/08-empty-state.jpg)](assets/08-empty-state.jpg) |
+
+To regenerate these, run:
+
+```bash
+uv run python -m scripts.take_screenshots
+```
+
 ## Architecture
 
 ```

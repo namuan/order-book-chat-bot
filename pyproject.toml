@@ -47,3 +47,8 @@ addopts = "-ra -q"
 
 [tool.uv]
 package = true
+
+[dependency-groups]
+dev = [
+    "playwright>=1.60.0",
+]
